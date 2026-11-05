@@ -1,8 +1,12 @@
+import { orderWordStartTokens } from "./graphemes";
 import {
   buildTrie,
+  collectPrefixEndNodes,
   createTrieNode,
-  findNode,
   insertWord,
+  mergeNextWeights,
+  mergeSuggestions,
+  sortedNextTokens,
   weightsToSortedLetters,
   type TrieNode,
   type WordFreq,
@@ -11,6 +15,8 @@ import {
 export type DictionaryEngine = {
   trie: TrieNode;
   globalLetterFreq: string[];
+  graphemes: readonly string[];
+  locale: string;
   nextLetters(prefix: string): string[];
   suggestWords(prefix: string, limit?: number): string[];
   topWords(limit?: number): string[];
@@ -34,7 +40,7 @@ function topWordsFromTrie(root: TrieNode, limit: number): string[] {
   return out;
 }
 
-function buildGlobalLetterFreq(entries: WordFreq[]): string[] {
+function buildGlobalLetterFreq(entries: WordFreq[], locale: string): string[] {
   const counts = new Map<string, number>();
   for (const { word, freq } of entries) {
     if (freq <= 0) continue;
@@ -42,37 +48,90 @@ function buildGlobalLetterFreq(entries: WordFreq[]): string[] {
       counts.set(ch, (counts.get(ch) ?? 0) + freq);
     }
   }
-  return weightsToSortedLetters(counts);
+  return weightsToSortedLetters(counts, locale);
 }
 
-export function createDictionaryEngine(
-  entries: WordFreq[],
-  globalLetterFreq?: string[],
+function lettersOnlyTokens(
+  tokens: string[],
+  graphemes: readonly string[],
+): string[] {
+  if (graphemes.length > 0) return tokens;
+  return tokens.filter((t) => t.length === 1);
+}
+
+function nextTokensForPrefix(
+  trie: TrieNode,
+  prefix: string,
+  graphemes: readonly string[],
+  locale: string,
+): string[] {
+  const nodes = collectPrefixEndNodes(trie, prefix, graphemes);
+  if (nodes.length === 0) return [];
+  const tokens = sortedNextTokens(nodes, locale);
+  return lettersOnlyTokens(tokens, graphemes);
+}
+
+function hasWordAt(
+  engine: DictionaryEngine,
+  word: string,
+  graphemes: readonly string[],
+): boolean {
+  if (!word) return false;
+  const nodes = collectPrefixEndNodes(engine.trie, word, graphemes);
+  return nodes.some((n) => n.suggestions.some((s) => s.word === word));
+}
+
+function nextLettersAt(
+  engine: DictionaryEngine,
+  prefix: string,
+  graphemes: readonly string[],
+): string[] {
+  if (!prefix) {
+    const weights = mergeNextWeights(
+      collectPrefixEndNodes(engine.trie, prefix, graphemes),
+    );
+    return orderWordStartTokens(
+      weights,
+      engine.globalLetterFreq,
+      graphemes,
+      engine.locale,
+      weights.size === 0,
+    );
+  }
+  return nextTokensForPrefix(engine.trie, prefix, graphemes, engine.locale);
+}
+
+function makeEngine(
+  trie: TrieNode,
+  globalLetterFreq: string[],
+  graphemes: readonly string[],
+  locale: string,
 ): DictionaryEngine {
-  const trie = buildTrie(entries);
-  const global =
-    globalLetterFreq && globalLetterFreq.length > 0
-      ? globalLetterFreq
-      : buildGlobalLetterFreq(entries);
-
-  return makeEngine(trie, global);
-}
-
-function makeEngine(trie: TrieNode, globalLetterFreq: string[]): DictionaryEngine {
   return {
     trie,
     globalLetterFreq,
+    graphemes,
+    locale,
     nextLetters(prefix: string) {
-      if (!prefix) return globalLetterFreq;
-      const node = findNode(trie, prefix);
-      if (!node) return [];
-      return weightsToSortedLetters(node.nextWeights);
+      if (!prefix) {
+        const weights = mergeNextWeights(
+          collectPrefixEndNodes(trie, prefix, graphemes),
+        );
+        return orderWordStartTokens(
+          weights,
+          globalLetterFreq,
+          graphemes,
+          locale,
+          weights.size === 0,
+        );
+      }
+      return nextTokensForPrefix(trie, prefix, graphemes, locale);
     },
     suggestWords(prefix: string, limit = 5) {
       if (!prefix) return [];
-      const node = findNode(trie, prefix);
-      if (!node) return [];
-      return node.suggestions
+      const nodes = collectPrefixEndNodes(trie, prefix, graphemes);
+      if (nodes.length === 0) return [];
+      return mergeSuggestions(nodes, limit * 3)
         .filter((s) => s.word.startsWith(prefix))
         .slice(0, limit)
         .map((s) => s.word);
@@ -82,15 +141,35 @@ function makeEngine(trie: TrieNode, globalLetterFreq: string[]): DictionaryEngin
     },
     hasWord(word: string) {
       if (!word) return false;
-      const node = findNode(trie, word);
-      if (!node) return false;
-      return node.suggestions.some((s) => s.word === word);
+      const nodes = collectPrefixEndNodes(trie, word, graphemes);
+      return nodes.some((n) =>
+        n.suggestions.some((s) => s.word === word),
+      );
     },
   };
 }
 
-export function createEmptyEngine(globalLetterFreq: string[]): DictionaryEngine {
-  return makeEngine(createTrieNode(), globalLetterFreq);
+export function createDictionaryEngine(
+  entries: WordFreq[],
+  graphemes: readonly string[],
+  locale: string,
+  globalLetterFreq?: string[],
+): DictionaryEngine {
+  const trie = buildTrie(entries, graphemes);
+  const global =
+    globalLetterFreq && globalLetterFreq.length > 0
+      ? globalLetterFreq
+      : buildGlobalLetterFreq(entries, locale);
+
+  return makeEngine(trie, global, graphemes, locale);
+}
+
+export function createEmptyEngine(
+  globalLetterFreq: string[],
+  graphemes: readonly string[],
+  locale: string,
+): DictionaryEngine {
+  return makeEngine(createTrieNode(), globalLetterFreq, graphemes, locale);
 }
 
 export function appendToEngine(
@@ -98,22 +177,50 @@ export function appendToEngine(
   batch: WordFreq[],
 ): void {
   for (const { word, freq } of batch) {
-    insertWord(engine.trie, word, freq, freq > 0);
+    insertWord(
+      engine.trie,
+      word,
+      freq,
+      freq > 0,
+      engine.graphemes,
+    );
   }
 }
 
-const SUGGESTION_LIMIT = 5;
+/** Max. szójavaslat — a chip-ek száma a rendelkezésre álló helytől függ. */
+export const SUGGESTION_LIMIT = 48;
+
+function uniqueWords(words: string[]): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const w of words) {
+    if (seen.has(w)) continue;
+    seen.add(w);
+    out.push(w);
+  }
+  return out;
+}
 
 export function buildSuggestions(
   engine: DictionaryEngine,
   prefix: string,
   finishWord: string,
+  graphemes: readonly string[],
 ): string[] {
   const limit = SUGGESTION_LIMIT;
   const raw = prefix
-    ? engine.suggestWords(prefix, limit + 2)
-    : engine.topWords(limit + 2);
-  return raw.filter((w) => w !== finishWord).slice(0, limit);
+    ? (() => {
+        const nodes = collectPrefixEndNodes(engine.trie, prefix, graphemes);
+        if (nodes.length === 0) return [];
+        return uniqueWords(
+          mergeSuggestions(nodes, limit * 3)
+            .filter((s) => s.word.startsWith(prefix))
+            .slice(0, limit + 8)
+            .map((s) => s.word),
+        );
+      })()
+    : engine.topWords(limit + 8);
+  return uniqueWords(raw.filter((w) => w !== finishWord)).slice(0, limit);
 }
 
 /** 1 betűs prefix: min(megjelenő betűk száma, ez). */
@@ -141,10 +248,6 @@ export function isDeferredSingleLetterFinish(
   );
 }
 
-/**
- * Where to splice the finish key among predictive letter keys (0 = first).
- * 1–3 betű: min(megjelenő betűk száma, felső határ); 4+: első hely.
- */
 export function finishKeyInsertIndex(
   prefix: string,
   visibleLetterCount: number,
@@ -155,32 +258,32 @@ export function finishKeyInsertIndex(
   return Math.min(visibleLetterCount, maxFinishDeferCap(len));
 }
 
-/** Show the vége/gata key. Needs finish word in dictionary. */
 export function shouldShowFinishKey(
   engine: DictionaryEngine,
   prefix: string,
   finishWord: string,
   singleLetterFinishPrefixes: readonly string[],
+  graphemes: readonly string[],
 ): boolean {
-  if (!engine.hasWord(finishWord)) return false;
+  if (!hasWordAt(engine, finishWord, graphemes)) return false;
   if (isDeferredSingleLetterFinish(prefix, singleLetterFinishPrefixes)) {
     return true;
   }
   if (prefix.length < 2) return false;
-  if (engine.nextLetters(prefix).length === 0) return true;
-  return engine.hasWord(prefix);
+  if (nextLettersAt(engine, prefix, graphemes).length === 0) return true;
+  return hasWordAt(engine, prefix, graphemes);
 }
 
-/** Hide other letter keys — only vége (e.g. gyíkot). */
 export function shouldHidePredictiveLetters(
   engine: DictionaryEngine,
   prefix: string,
   finishWord: string,
   _singleLetterFinishPrefixes: readonly string[],
+  graphemes: readonly string[],
 ): boolean {
-  if (!engine.hasWord(finishWord)) return false;
+  if (!hasWordAt(engine, finishWord, graphemes)) return false;
   if (prefix.length < 2) return false;
-  return engine.nextLetters(prefix).length === 0;
+  return nextLettersAt(engine, prefix, graphemes).length === 0;
 }
 
 export function predictiveLettersForPrefix(
@@ -189,6 +292,8 @@ export function predictiveLettersForPrefix(
   finishWord: string,
   fallbackGlobal: string[],
   singleLetterFinishPrefixes: readonly string[],
+  dictionaryLoading: boolean,
+  graphemes: readonly string[],
 ): string[] {
   if (
     shouldHidePredictiveLetters(
@@ -196,17 +301,44 @@ export function predictiveLettersForPrefix(
       prefix,
       finishWord,
       singleLetterFinishPrefixes,
+      graphemes,
     )
   ) {
     return [];
   }
-  const letters = engine.nextLetters(prefix);
-  if (letters.length > 0) return letters;
-  if (!prefix) return fallbackGlobal;
-  return [];
+
+  const tokens = nextTokensForPrefix(
+    engine.trie,
+    prefix,
+    graphemes,
+    engine.locale,
+  );
+  if (tokens.length === 0 && prefix) return [];
+
+  if (!prefix) {
+    const fallback =
+      engine.globalLetterFreq.length > 0
+        ? engine.globalLetterFreq
+        : fallbackGlobal;
+    const weights = mergeNextWeights(
+      collectPrefixEndNodes(engine.trie, prefix, graphemes),
+    );
+    return lettersOnlyTokens(
+      orderWordStartTokens(
+        weights,
+        fallback,
+        graphemes,
+        engine.locale,
+        dictionaryLoading,
+      ),
+      graphemes,
+    );
+  }
+
+  return tokens;
 }
 
 /** Gyakoriság-súlyozott betűsor első ~12 karaktere (debug / teszt). */
 export function letterOrderPreview(entries: WordFreq[], take = 12): string {
-  return buildGlobalLetterFreq(entries).slice(0, take).join("");
+  return buildGlobalLetterFreq(entries, "hu").slice(0, take).join("");
 }

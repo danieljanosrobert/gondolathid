@@ -16,10 +16,11 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.35rem;
+  gap: 0.25rem;
   padding: 0 0.15rem 0.25rem;
   min-width: 0;
   flex-shrink: 0;
+  flex-wrap: wrap;
 }
 
 .segmentGroup {
@@ -48,6 +49,64 @@
 .segmentBtnActive {
   background: var(--accent);
   color: #fff;
+}
+
+.multiCharControl {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-shrink: 0;
+  min-width: 0;
+}
+
+.multiCharLabel {
+  font-size: clamp(0.72rem, 2.6vmin, 0.82rem);
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 0.02em;
+  user-select: none;
+}
+
+.switch {
+  position: relative;
+  flex-shrink: 0;
+  width: 2.5rem;
+  height: 1.45rem;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.switchTrack {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--border);
+  transition: background 0.15s ease;
+}
+
+.switch[aria-checked="true"] .switchTrack {
+  background: var(--accent);
+}
+
+.switchThumb {
+  position: absolute;
+  top: 0.15rem;
+  left: 0.15rem;
+  width: 1.15rem;
+  height: 1.15rem;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 22%);
+  transition: transform 0.15s ease;
+}
+
+.switchThumbOn {
+  transform: translateX(1.05rem);
 }
 
 .keysPanel {

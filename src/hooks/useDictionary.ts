@@ -24,17 +24,28 @@ export type DictionaryState =
     };
 
 export function useDictionary(lang: AppLanguage): DictionaryState {
+  const langConfig = LANGUAGES[lang];
+
   const [state, setState] = useState<DictionaryState>(() => ({
     status: "ready",
-    engine: createEmptyEngine(LANGUAGES[lang].fallbackGlobalLetters),
+    engine: createEmptyEngine(
+      langConfig.fallbackGlobalLetters,
+      langConfig.predictiveDigraphs,
+      langConfig.locale,
+    ),
     loadProgress: 0,
     wordCount: 0,
   }));
 
   useEffect(() => {
-    const fallback = LANGUAGES[lang].fallbackGlobalLetters;
+    const { fallbackGlobalLetters, predictiveDigraphs, locale, finishWord } =
+      LANGUAGES[lang];
     let cancelled = false;
-    let engine = createEmptyEngine(fallback);
+    let engine = createEmptyEngine(
+      fallbackGlobalLetters,
+      predictiveDigraphs,
+      locale,
+    );
     let wordCount = 0;
 
     const bump = (loadProgress: number) => {
@@ -47,18 +58,29 @@ export function useDictionary(lang: AppLanguage): DictionaryState {
       });
     };
 
-    engine = createEmptyEngine(fallback);
+    engine = createEmptyEngine(
+      fallbackGlobalLetters,
+      predictiveDigraphs,
+      locale,
+    );
     bump(0);
 
     (async () => {
       try {
         const stats = await fetchWordStats(lang);
         if (cancelled) return;
-        engine = createEmptyEngine(stats.globalLetters);
-        appendToEngine(engine, [
-          { word: LANGUAGES[lang].finishWord, freq: 0 },
-        ]);
-        bump(0.02);
+        engine = createEmptyEngine(
+          stats.globalLetters,
+          predictiveDigraphs,
+          locale,
+        );
+        appendToEngine(engine, [{ word: finishWord, freq: 0 }]);
+
+        const extra = await loadExtraWords();
+        if (cancelled) return;
+        appendToEngine(engine, extra);
+        wordCount += extra.length + 1;
+        bump(0.05);
 
         const totalEstimate = stats.bootstrapLines ?? 60_000;
 
@@ -71,7 +93,7 @@ export function useDictionary(lang: AppLanguage): DictionaryState {
           (p: LoadProgress) => {
             const ratio =
               p.phase === "bootstrap"
-                ? Math.min(0.92, p.loaded / Math.max(totalEstimate, 1))
+                ? Math.min(0.92, 0.05 + (0.87 * p.loaded) / Math.max(totalEstimate, 1))
                 : 0.92;
             bump(ratio);
           },
@@ -84,11 +106,6 @@ export function useDictionary(lang: AppLanguage): DictionaryState {
         if (cancelled) return;
         appendToEngine(engine, supplement);
         wordCount += supplement.length;
-
-        const extra = await loadExtraWords();
-        if (cancelled) return;
-        appendToEngine(engine, extra);
-        wordCount += extra.length;
         bump(1);
       } catch (e) {
         if (cancelled) return;

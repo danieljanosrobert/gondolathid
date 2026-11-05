@@ -1,4 +1,6 @@
-:root {
+:root,
+[data-theme="dark"] {
+  color-scheme: dark;
   --bg: #0f0f14;
   --surface: #1a1a24;
   --keyboard-bg: #12121a;
@@ -10,6 +12,26 @@
   --key-bg: #2a2a36;
   --key-active: #3d3d4d;
   --key-shadow: #1a1a22;
+  --theme-toggle-shadow: rgb(0 0 0 / 35%);
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f2f2f7;
+  --surface: #ffffff;
+  --keyboard-bg: #e8e8ed;
+  --text: #1c1c1e;
+  --muted: #6c6c70;
+  --border: #d1d1d6;
+  --accent: #2563eb;
+  --accent-soft: #dbeafe;
+  --key-bg: #ffffff;
+  --key-active: #e5e5ea;
+  --key-shadow: rgb(0 0 0 / 8%);
+  --theme-toggle-shadow: rgb(0 0 0 / 12%);
+}
+
+:root {
   font-family:
     "Segoe UI",
     system-ui,
@@ -48,16 +70,48 @@ body {
   overflow: hidden;
 }
 
+.keyboardDock {
+  flex: 0 0 auto;
+  width: 100%;
+}
+
 @media (orientation: landscape) and (max-height: 32rem) {
   .app {
     max-width: none;
   }
 }
 
-.keyboardDock {
-  margin-top: auto;
-  flex-shrink: 0;
-  width: 100%;
+.keyboardLoading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.85rem;
+  min-height: clamp(8rem, 38vmin, 12rem);
+  padding: 1.25rem 1rem max(1rem, env(safe-area-inset-bottom));
+  background: var(--keyboard-bg);
+}
+
+.keyboardLoadingSpinner {
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: keyboardSpin 0.75s linear infinite;
+}
+
+.keyboardLoadingText {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--muted);
+  text-align: center;
+}
+
+@keyframes keyboardSpin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .app--center {

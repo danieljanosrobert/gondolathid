@@ -16,6 +16,11 @@ export type LanguageConfig = {
   finishWord: string;
   /** Egybetűs prefix: „vége” megjelenhet (HU: a, e); pozíció a hossztól függ. */
   singleLetterFinishPrefixes: readonly string[];
+  /** Prediktív mód: többbetűs ábécé-egységek (egy gomb = teljes graféma). */
+  predictiveDigraphs: readonly string[];
+  /** Eszköztár: kettős/tripla gombok kapcsoló felirata. */
+  multiCharKeysLabel: string;
+  multiCharKeysAria: string;
 };
 
 export const LANGUAGES: Record<AppLanguage, LanguageConfig> = {
@@ -40,6 +45,20 @@ export const LANGUAGES: Record<AppLanguage, LanguageConfig> = {
     enterKeyAria: "Új sor",
     finishWord: "vége",
     singleLetterFinishPrefixes: ["a", "e"],
+    /** Magyar kettős/tripla: cs, dz, dzs, gy, ly, ny, sz, ty, zs */
+    predictiveDigraphs: [
+      "dzs",
+      "cs",
+      "dz",
+      "gy",
+      "ly",
+      "ny",
+      "sz",
+      "ty",
+      "zs",
+    ],
+    multiCharKeysLabel: "sz",
+    multiCharKeysAria: "Kettős és hármas betűk a prediktív billentyűzeten",
   },
   ro: {
     id: "ro",
@@ -62,6 +81,19 @@ export const LANGUAGES: Record<AppLanguage, LanguageConfig> = {
     enterKeyAria: "Linie nouă",
     finishWord: "gata",
     singleLetterFinishPrefixes: [],
+    /** Román c/g + e/i (che/chi, ghe/ghi, ce/ci, ge/gi) */
+    predictiveDigraphs: [
+      "ghe",
+      "ghi",
+      "che",
+      "chi",
+      "ce",
+      "ci",
+      "ge",
+      "gi",
+    ],
+    multiCharKeysLabel: "ge",
+    multiCharKeysAria: "Grupuri de 2–3 litere pe tastatura predictivă",
   },
 };
 

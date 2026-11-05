@@ -1,23 +1,30 @@
 .bar {
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  padding: 1rem 1rem 0.5rem;
-  padding-top: max(1rem, env(safe-area-inset-top));
+  gap: 0.5rem;
+  padding: max(0.75rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right))
+    0 max(1rem, env(safe-area-inset-left));
   background: var(--surface);
   border-bottom: 1px solid var(--border);
-  flex: 1 1 auto;
+  flex: 1 1 0;
   min-height: 0;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .textArea {
+  flex: 0 0 auto;
+  min-height: 2.75rem;
+  min-width: 0;
   font-size: 1.25rem;
-  line-height: 1.5;
-  min-height: 3rem;
+  line-height: 1.45;
+  padding-right: 2.25rem;
   word-break: break-word;
   color: var(--text);
+  overflow-y: auto;
+  max-height: min(28vh, 9rem);
+  -webkit-overflow-scrolling: touch;
 }
 
 .placeholder {
@@ -31,31 +38,62 @@
   color: var(--muted);
 }
 
-.suggestions {
+.suggestionsWrap {
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  min-height: 3rem;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.suggestions {
+  --chip-font-size: 1.05rem;
+  --chip-pad-x: 0.55rem;
+  --chip-gap: 0.45rem;
+  --chip-font-weight: 600;
+  --suggestion-gap: var(--chip-gap);
+  --suggestion-row-min-h: 2.75rem;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-content: flex-start;
+  gap: var(--suggestion-gap);
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.suggestionRow {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: var(--suggestion-gap);
+  width: 100%;
+  min-width: 0;
+  min-height: var(--suggestion-row-min-h);
+  flex-shrink: 0;
 }
 
 .chip {
-  flex: 1 1 0;
-  min-width: 4.5rem;
-  min-height: 3rem;
-  padding: 0.5rem 0.75rem;
-  font-size: 1.125rem;
+  box-sizing: border-box;
+  flex: var(--chip-chars, 1) var(--chip-chars, 1) 0;
+  min-width: 0;
+  max-width: 100%;
+  min-height: var(--suggestion-row-min-h);
+  padding: 0.4rem 0.55rem;
+  font-size: var(--chip-font-size);
   font-weight: 600;
+  line-height: 1.2;
   border: none;
-  border-radius: 0.75rem;
+  border-radius: 0.65rem;
   background: var(--accent-soft);
   color: var(--accent);
   cursor: pointer;
   touch-action: manipulation;
-}
-
-.chipFinish {
-  flex: 2 1 0;
-  min-width: 9rem;
+  text-align: center;
+  white-space: nowrap;
 }
 
 .chip:active {
@@ -64,51 +102,29 @@
   color: #fff;
 }
 
-@media (min-width: 480px) {
-  .chip {
-    flex: 1 1 0;
-    max-width: 20%;
-  }
-
-  .chipFinish {
-    flex: 2 1 0;
-    max-width: 40%;
-    min-width: 8rem;
-  }
-}
-
 @media (orientation: landscape) and (max-height: 32rem) {
   .bar {
-    gap: 0.4rem;
-    padding: 0.45rem max(0.75rem, env(safe-area-inset-left)) 0.35rem
-      max(0.75rem, env(safe-area-inset-right));
+    gap: 0.3rem;
+    padding: max(0.35rem, env(safe-area-inset-top))
+      max(0.65rem, env(safe-area-inset-left)) 0
+      max(0.65rem, env(safe-area-inset-right));
   }
 
   .textArea {
     font-size: 1rem;
-    min-height: 0;
-    max-height: 4.5rem;
-    overflow-y: auto;
+    min-height: 2rem;
+    max-height: min(20vh, 4.5rem);
   }
 
   .suggestions {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    min-height: 0;
-    gap: 0.35rem;
+    --chip-font-size: 0.88rem;
+    --chip-pad-x: 0.4rem;
+    --chip-gap: 0.28rem;
+    --suggestion-row-min-h: 2rem;
   }
 
   .chip {
-    flex: 0 0 auto;
-    min-width: 4.5rem;
-    min-height: 2.35rem;
-    padding: 0.35rem 0.65rem;
-    font-size: 0.95rem;
-    border-radius: 0.5rem;
-  }
-
-  .chipFinish {
-    flex: 0 0 auto;
-    min-width: 8.5rem;
+    padding: 0.28rem 0.4rem;
+    border-radius: 0.45rem;
   }
 }

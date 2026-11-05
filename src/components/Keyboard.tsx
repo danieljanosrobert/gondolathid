@@ -14,6 +14,8 @@ type Props = {
   onLangChange: (lang: AppLanguage) => void;
   mode: KeyboardMode;
   onModeChange: (mode: KeyboardMode) => void;
+  multiCharKeys: boolean;
+  onMultiCharKeysChange: (enabled: boolean) => void;
   qwertyRows: readonly string[][];
   predictiveLetters: string[];
   allowedLetters: ReadonlySet<string>;
@@ -70,6 +72,8 @@ export function Keyboard({
   onLangChange,
   mode,
   onModeChange,
+  multiCharKeys,
+  onMultiCharKeysChange,
   qwertyRows,
   predictiveLetters,
   allowedLetters,
@@ -111,6 +115,30 @@ export function Keyboard({
               {LANGUAGES[id].label}
             </button>
           ))}
+        </div>
+        <div className={styles.multiCharControl}>
+          <span className={styles.multiCharLabel} id="multi-char-toggle-label">
+            {copy.multiCharKeysLabel}
+          </span>
+          <button
+            type="button"
+            role="switch"
+            className={styles.switch}
+            aria-checked={multiCharKeys}
+            aria-labelledby="multi-char-toggle-label"
+            title={copy.multiCharKeysAria}
+            onClick={() => onMultiCharKeysChange(!multiCharKeys)}
+          >
+            <span className={styles.switchTrack} aria-hidden>
+              <span
+                className={
+                  multiCharKeys
+                    ? `${styles.switchThumb} ${styles.switchThumbOn}`
+                    : styles.switchThumb
+                }
+              />
+            </span>
+          </button>
         </div>
         <div className={styles.segmentGroup} role="group" aria-label="Kiosztás">
           <button
