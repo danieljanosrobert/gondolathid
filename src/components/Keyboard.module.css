@@ -98,13 +98,41 @@
   flex: 1 1 0;
   min-width: 0;
   max-width: none;
+}
+
+.qwertyBlock .key,
+.rowLast .key {
   min-height: clamp(1.85rem, 9vmin, 3rem);
   font-size: clamp(0.72rem, 2.65vmin, 1.25rem);
 }
 
+.keysPanel .predictiveBlock .key {
+  min-height: clamp(3rem, 14vmin, 4.25rem);
+  font-size: clamp(1.55rem, 7vmin, 2.35rem);
+  border-radius: 0.6rem;
+}
+
+.keysPanel .predictiveBlock .keyFinish {
+  flex: 2 1 0;
+  min-width: 0;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.keysPanel .predictiveBlock .keyFinish:active {
+  background: var(--accent);
+  color: #fff;
+}
+
+.keysPanel .predictiveBlock .keySpacer {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: clamp(3rem, 14vmin, 4.25rem);
+  visibility: hidden;
+  pointer-events: none;
+}
+
 .key {
-  min-height: clamp(1.85rem, 9vmin, 3rem);
-  font-size: clamp(0.72rem, 2.65vmin, 1.25rem);
   font-weight: 600;
   border: none;
   border-radius: 0.5rem;
@@ -213,18 +241,22 @@
     gap: 0.2rem;
   }
 
-  .keysPanel .key,
-  .key,
+  .qwertyBlock .key,
+  .rowLast .key {
+    min-height: 1.75rem;
+    font-size: 0.8rem;
+  }
+
+  .keysPanel .predictiveBlock .key {
+    min-height: 2.65rem;
+    font-size: 1.45rem;
+  }
+
   .keyBackspace,
   .actionSpace,
   .actionEnter {
     min-height: 1.75rem;
     border-radius: 0.35rem;
-  }
-
-  .keysPanel .key,
-  .key {
-    font-size: 0.8rem;
   }
 
   .keyBackspace {
@@ -244,5 +276,61 @@
 
   .rowLast {
     padding-left: clamp(0.25rem, 1.5vmin, 0.75rem);
+  }
+}
+
+/* Asztali / széles nézet: vmin a teljes viewportra számít, nem a 640px-es oszlopra */
+@media (min-width: 640px) {
+  .segmentBtn,
+  .segmentBtnActive {
+    font-size: 0.72rem;
+    padding: 0.3rem 0.5rem;
+  }
+
+  .qwertyBlock,
+  .predictiveBlock {
+    gap: 0.25rem;
+  }
+
+  .row,
+  .rowLast {
+    gap: 0.25rem;
+  }
+
+  .qwertyBlock .key,
+  .rowLast .key,
+  .keysPanel .predictiveBlock .key {
+    min-height: 2.35rem;
+    font-size: 1rem;
+    border-radius: 0.5rem;
+  }
+
+  .keysPanel .predictiveBlock .keySpacer {
+    min-height: 2.35rem;
+  }
+
+  .keyBackspace {
+    min-height: 2.35rem;
+    font-size: 1.1rem;
+    min-width: 2.5rem;
+    max-width: 3rem;
+  }
+
+  .actionSpace,
+  .actionEnter {
+    min-height: 2.35rem;
+  }
+
+  .actionSpace {
+    font-size: 0.85rem;
+  }
+
+  .actionEnter {
+    flex: 0 0 3.5rem;
+    font-size: 1.05rem;
+  }
+
+  .rowLast {
+    padding-left: 0.75rem;
   }
 }

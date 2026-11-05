@@ -39,8 +39,8 @@
 }
 
 .chip {
-  flex: 1 1 calc(50% - 0.5rem);
-  min-width: 5rem;
+  flex: 1 1 0;
+  min-width: 4.5rem;
   min-height: 3rem;
   padding: 0.5rem 0.75rem;
   font-size: 1.125rem;
@@ -53,6 +53,11 @@
   touch-action: manipulation;
 }
 
+.chipFinish {
+  flex: 2 1 0;
+  min-width: 9rem;
+}
+
 .chip:active {
   transform: scale(0.98);
   background: var(--accent);
@@ -61,7 +66,14 @@
 
 @media (min-width: 480px) {
   .chip {
-    flex: 1 1 calc(20% - 0.5rem);
+    flex: 1 1 0;
+    max-width: 20%;
+  }
+
+  .chipFinish {
+    flex: 2 1 0;
+    max-width: 40%;
+    min-width: 8rem;
   }
 }
 
@@ -93,5 +105,10 @@
     padding: 0.35rem 0.65rem;
     font-size: 0.95rem;
     border-radius: 0.5rem;
+  }
+
+  .chipFinish {
+    flex: 0 0 auto;
+    min-width: 8.5rem;
   }
 }

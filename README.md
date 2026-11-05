@@ -29,6 +29,8 @@ Open the localhost URL from the terminal on a phone or emulator.
 
 See [NOTICE.md](./NOTICE.md).
 
+Personal / shared words (names, `bojler`, `gázkazán`, …) live in [`public/data/extra-words.txt`](./public/data/extra-words.txt) (one line per word, all languages). Edit this file and redeploy; `npm run build:words` also merges them into each language supplement.
+
 ## Usage
 
 1. **Predictive:** letters are ordered by corpus frequency / next-letter likelihood; up to five suggested words above the keyboard.

@@ -12,6 +12,10 @@ export type LanguageConfig = {
   spaceKeyLabel: string;
   spaceKeyAria: string;
   enterKeyAria: string;
+  /** Prediktív „befejezés” gyorsgomb szövege (csak ha a szótárban van). */
+  finishWord: string;
+  /** Egybetűs prefix: „vége” megjelenhet (HU: a, e); pozíció a hossztól függ. */
+  singleLetterFinishPrefixes: readonly string[];
 };
 
 export const LANGUAGES: Record<AppLanguage, LanguageConfig> = {
@@ -34,6 +38,8 @@ export const LANGUAGES: Record<AppLanguage, LanguageConfig> = {
     spaceKeyLabel: "Szóköz",
     spaceKeyAria: "Szóköz",
     enterKeyAria: "Új sor",
+    finishWord: "vége",
+    singleLetterFinishPrefixes: ["a", "e"],
   },
   ro: {
     id: "ro",
@@ -54,6 +60,8 @@ export const LANGUAGES: Record<AppLanguage, LanguageConfig> = {
     spaceKeyLabel: "Spațiu",
     spaceKeyAria: "Spațiu",
     enterKeyAria: "Linie nouă",
+    finishWord: "gata",
+    singleLetterFinishPrefixes: [],
   },
 };
 

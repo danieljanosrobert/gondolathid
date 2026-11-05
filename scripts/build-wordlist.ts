@@ -1,4 +1,4 @@
-import { createWriteStream, mkdirSync, writeFileSync } from "node:fs";
+import { createWriteStream, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { pipeline } from "node:stream/promises";
 import { Readable } from "node:stream";
 import { dirname, join } from "node:path";
@@ -15,6 +15,7 @@ type LangBuild = {
   hunspellUrl: string;
   wordPattern: RegExp;
   locale: string;
+  finishWord: string;
 };
 
 const LANGS: LangBuild[] = [
@@ -26,6 +27,7 @@ const LANGS: LangBuild[] = [
       "https://raw.githubusercontent.com/LibreOffice/dictionaries/master/hu_HU/hu_HU.dic",
     wordPattern: /^[a-záéíóöőúüű-]+$/,
     locale: "hu",
+    finishWord: "vége",
   },
   {
     id: "ro",
@@ -35,6 +37,7 @@ const LANGS: LangBuild[] = [
       "https://raw.githubusercontent.com/LibreOffice/dictionaries/master/ro/ro_RO.dic",
     wordPattern: /^[a-zăâîșț-]+$/,
     locale: "ro",
+    finishWord: "gata",
   },
 ];
 
@@ -101,6 +104,22 @@ function globalLettersFromMap(
     .map(([ch]) => ch);
 }
 
+function loadSharedExtraWords(publicRoot: string): string[] {
+  const path = join(publicRoot, "extra-words.txt");
+  if (!existsSync(path)) return [];
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const line of readFileSync(path, "utf8").split(/\n/)) {
+    const raw = line.trim();
+    if (!raw) continue;
+    const word = raw.toLocaleLowerCase("hu");
+    if (seen.has(word)) continue;
+    seen.add(word);
+    out.push(word);
+  }
+  return out;
+}
+
 async function buildLanguage(lang: LangBuild, publicRoot: string) {
   console.log(`\n=== ${lang.id.toUpperCase()} ===`);
   console.log(`Downloading ${lang.id}_full…`);
@@ -136,6 +155,13 @@ async function buildLanguage(lang: LangBuild, publicRoot: string) {
   const supplementLines: string[] = [];
   for (const word of hunspell) {
     if (!byWord.has(word)) supplementLines.push(word);
+  }
+  if (!byWord.has(lang.finishWord) && !supplementLines.includes(lang.finishWord)) {
+    supplementLines.push(lang.finishWord);
+  }
+  const extraWords = loadSharedExtraWords(publicRoot);
+  for (const word of extraWords) {
+    if (!supplementLines.includes(word)) supplementLines.push(word);
   }
   supplementLines.sort((a, b) => a.localeCompare(b, lang.locale));
 

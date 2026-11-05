@@ -3,6 +3,12 @@ import { Keyboard } from "./components/Keyboard";
 import { WordBar } from "./components/WordBar";
 import { useDictionary } from "./hooks/useDictionary";
 import { usePhysicalKeyboard } from "./hooks/usePhysicalKeyboard";
+import {
+  buildSuggestions,
+  finishKeyInsertIndex,
+  predictiveLettersForPrefix,
+  shouldShowFinishKey,
+} from "./lib/predict";
 import type { AppLanguage } from "./lib/language";
 import { LANGUAGES } from "./lib/language";
 import type { KeyboardMode } from "./lib/language";
@@ -19,17 +25,58 @@ export default function App() {
   const engine = dict.status === "ready" ? dict.engine : null;
   const loadProgress = dict.status === "ready" ? dict.loadProgress : 0;
 
-  const suggestions = useMemo(
-    () => engine?.suggestWords(prefix) ?? [],
-    [engine, prefix],
-  );
+  const suggestions = useMemo(() => {
+    if (!engine) return [];
+    return buildSuggestions(engine, prefix, langConfig.finishWord);
+  }, [engine, prefix, langConfig.finishWord]);
+
+  const finishKey = useMemo(() => {
+    if (!engine || mode !== "predictive") return null;
+    if (
+      !shouldShowFinishKey(
+        engine,
+        prefix,
+        langConfig.finishWord,
+        langConfig.singleLetterFinishPrefixes,
+      )
+    ) {
+      return null;
+    }
+    return langConfig.finishWord;
+  }, [engine, prefix, langConfig.finishWord, langConfig.singleLetterFinishPrefixes, mode]);
 
   const predictiveLetters = useMemo(() => {
     if (!engine) return langConfig.fallbackGlobalLetters;
-    const letters = engine.nextLetters(prefix);
-    if (letters.length > 0) return letters;
-    return engine.globalLetterFreq;
-  }, [engine, prefix, langConfig.fallbackGlobalLetters]);
+    return predictiveLettersForPrefix(
+      engine,
+      prefix,
+      langConfig.finishWord,
+      langConfig.fallbackGlobalLetters,
+      langConfig.singleLetterFinishPrefixes,
+    );
+  }, [
+    engine,
+    prefix,
+    langConfig.finishWord,
+    langConfig.fallbackGlobalLetters,
+    langConfig.singleLetterFinishPrefixes,
+  ]);
+
+  const finishKeyInsertAt = useMemo(() => {
+    if (!finishKey) return 0;
+    return finishKeyInsertIndex(prefix, predictiveLetters.length);
+  }, [finishKey, prefix, predictiveLetters.length]);
+
+  const onPickWord = useCallback((word: string) => {
+    setComposedText((t) => t + word + " ");
+    setPrefix("");
+  }, []);
+
+  const onFinishKey = useCallback(() => {
+    if (!prefix) return;
+    setComposedText((t) => t + prefix + " ");
+    setPrefix("");
+  }, [prefix]);
 
   const allowedLetters = useMemo(
     () => new Set(predictiveLetters),
@@ -48,11 +95,6 @@ export default function App() {
 
   const onLetter = useCallback((letter: string) => {
     setPrefix((p) => p + letter);
-  }, []);
-
-  const onPickWord = useCallback((word: string) => {
-    setComposedText((t) => t + word + " ");
-    setPrefix("");
   }, []);
 
   const onBackspace = useCallback(() => {
@@ -125,6 +167,9 @@ export default function App() {
           onBackspace={onBackspace}
           onSpace={onSpace}
           onEnter={onEnter}
+          finishKey={finishKey}
+          finishKeyInsertAt={finishKeyInsertAt}
+          onFinishKey={onFinishKey}
         />
       </div>
     </div>

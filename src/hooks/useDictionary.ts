@@ -3,6 +3,7 @@ import type { AppLanguage } from "../lib/language";
 import { LANGUAGES } from "../lib/language";
 import {
   fetchWordStats,
+  loadExtraWords,
   loadSupplement,
   streamBootstrap,
   type LoadProgress,
@@ -54,6 +55,9 @@ export function useDictionary(lang: AppLanguage): DictionaryState {
         const stats = await fetchWordStats(lang);
         if (cancelled) return;
         engine = createEmptyEngine(stats.globalLetters);
+        appendToEngine(engine, [
+          { word: LANGUAGES[lang].finishWord, freq: 0 },
+        ]);
         bump(0.02);
 
         const totalEstimate = stats.bootstrapLines ?? 60_000;
@@ -80,6 +84,11 @@ export function useDictionary(lang: AppLanguage): DictionaryState {
         if (cancelled) return;
         appendToEngine(engine, supplement);
         wordCount += supplement.length;
+
+        const extra = await loadExtraWords();
+        if (cancelled) return;
+        appendToEngine(engine, extra);
+        wordCount += extra.length;
         bump(1);
       } catch (e) {
         if (cancelled) return;

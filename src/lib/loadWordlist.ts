@@ -1,5 +1,6 @@
 import type { AppLanguage } from "../lib/language";
 import { dataBasePath } from "../lib/language";
+import { extraWordsToFreq, extraWordsUrl, parseExtraWordsText } from "./extraWords";
 import type { WordFreq } from "./trie";
 
 export type WordStats = {
@@ -158,4 +159,15 @@ export async function loadSupplement(lang: AppLanguage): Promise<WordFreq[]> {
     if (word) entries.push({ word, freq: 0 });
   }
   return entries;
+}
+
+/** Shared personal / domain words (all languages). */
+export async function loadExtraWords(): Promise<WordFreq[]> {
+  const url = extraWordsUrl();
+  const res = await fetch(url);
+  if (!res.ok) {
+    throw new Error(`extra-words.txt hiányzik (${res.status})`);
+  }
+  const text = await res.text();
+  return extraWordsToFreq(parseExtraWordsText(text));
 }

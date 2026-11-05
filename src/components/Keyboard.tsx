@@ -3,7 +3,11 @@ import type { AppLanguage, KeyboardMode } from "../lib/language";
 import { LANGUAGES } from "../lib/language";
 import styles from "./Keyboard.module.css";
 
-const PREDICTIVE_COLS = 10;
+const PREDICTIVE_COLS = 8;
+/** Internal slot marker for the finish key in predictive rows. */
+const FINISH_SLOT = "\u0000";
+/** Invisible pad so „vége” can sit at the 10th slot when fewer letter keys exist. */
+const EMPTY_SLOT = "\u0001";
 
 type Props = {
   lang: AppLanguage;
@@ -13,6 +17,9 @@ type Props = {
   qwertyRows: readonly string[][];
   predictiveLetters: string[];
   allowedLetters: ReadonlySet<string>;
+  finishKey: string | null;
+  finishKeyInsertAt: number;
+  onFinishKey: () => void;
   onLetter: (letter: string) => void;
   onBackspace: () => void;
   onSpace: () => void;
@@ -32,6 +39,23 @@ function BackspaceKey({ onClick }: { onClick: () => void }) {
   );
 }
 
+function mergeFinishIntoLetterGrid(
+  letters: string[],
+  finishKey: string | null,
+  insertAt: number,
+): string[] {
+  if (!finishKey) return letters;
+  if (insertAt <= 0) {
+    return [FINISH_SLOT, ...letters];
+  }
+  const head = letters.slice(0, insertAt);
+  const tail = letters.slice(insertAt);
+  while (head.length < insertAt) {
+    head.push(EMPTY_SLOT);
+  }
+  return [...head, FINISH_SLOT, ...tail];
+}
+
 function chunkLetters(letters: string[], cols: number): string[][] {
   if (letters.length === 0) return [[]];
   const rows: string[][] = [];
@@ -49,6 +73,9 @@ export function Keyboard({
   qwertyRows,
   predictiveLetters,
   allowedLetters,
+  finishKey,
+  finishKeyInsertAt,
+  onFinishKey,
   onLetter,
   onBackspace,
   onSpace,
@@ -58,10 +85,14 @@ export function Keyboard({
   const lastQwertyRow = qwertyRows.length - 1;
   const copy = LANGUAGES[lang];
 
-  const predictiveRows = useMemo(
-    () => chunkLetters(predictiveLetters, PREDICTIVE_COLS),
-    [predictiveLetters],
-  );
+  const predictiveRows = useMemo(() => {
+    const flat = mergeFinishIntoLetterGrid(
+      predictiveLetters,
+      finishKey,
+      finishKey ? finishKeyInsertAt : 0,
+    );
+    return chunkLetters(flat, PREDICTIVE_COLS);
+  }, [predictiveLetters, finishKey, finishKeyInsertAt]);
 
   return (
     <section className={styles.keyboard} aria-label="Billentyűzet">
@@ -107,19 +138,36 @@ export function Keyboard({
         <div className={styles.keysPanel}>
           <div className={styles.predictiveBlock}>
             {predictiveRows.map((row, rowIndex) => (
-                <div key={rowIndex} className={styles.row}>
-                  {row.map((letter) => (
+              <div key={rowIndex} className={styles.row}>
+                {row.map((cell, cellIndex) =>
+                  cell === FINISH_SLOT && finishKey ? (
                     <button
-                      key={letter}
+                      key="finish"
+                      type="button"
+                      className={`${styles.key} ${styles.keyFinish}`}
+                      onClick={onFinishKey}
+                    >
+                      {finishKey}
+                    </button>
+                  ) : cell === EMPTY_SLOT ? (
+                    <span
+                      key={`pad-${rowIndex}-${cellIndex}`}
+                      className={styles.keySpacer}
+                      aria-hidden
+                    />
+                  ) : (
+                    <button
+                      key={`${rowIndex}-${cellIndex}-${cell}`}
                       type="button"
                       className={styles.key}
-                      onClick={() => onLetter(letter)}
+                      onClick={() => onLetter(cell)}
                     >
-                      {letter}
+                      {cell}
                     </button>
-                  ))}
-                </div>
-              ))}
+                  ),
+                )}
+              </div>
+            ))}
           </div>
         </div>
       ) : (
