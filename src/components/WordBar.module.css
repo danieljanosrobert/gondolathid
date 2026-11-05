@@ -1,0 +1,97 @@
+.bar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem 1rem 0.5rem;
+  padding-top: max(1rem, env(safe-area-inset-top));
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.textArea {
+  font-size: 1.25rem;
+  line-height: 1.5;
+  min-height: 3rem;
+  word-break: break-word;
+  color: var(--text);
+}
+
+.placeholder {
+  color: var(--muted);
+}
+
+.loadHint {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  min-height: 3rem;
+}
+
+.chip {
+  flex: 1 1 calc(50% - 0.5rem);
+  min-width: 5rem;
+  min-height: 3rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 0.75rem;
+  background: var(--accent-soft);
+  color: var(--accent);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.chip:active {
+  transform: scale(0.98);
+  background: var(--accent);
+  color: #fff;
+}
+
+@media (min-width: 480px) {
+  .chip {
+    flex: 1 1 calc(20% - 0.5rem);
+  }
+}
+
+@media (orientation: landscape) and (max-height: 32rem) {
+  .bar {
+    gap: 0.4rem;
+    padding: 0.45rem max(0.75rem, env(safe-area-inset-left)) 0.35rem
+      max(0.75rem, env(safe-area-inset-right));
+  }
+
+  .textArea {
+    font-size: 1rem;
+    min-height: 0;
+    max-height: 4.5rem;
+    overflow-y: auto;
+  }
+
+  .suggestions {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    min-height: 0;
+    gap: 0.35rem;
+  }
+
+  .chip {
+    flex: 0 0 auto;
+    min-width: 4.5rem;
+    min-height: 2.35rem;
+    padding: 0.35rem 0.65rem;
+    font-size: 0.95rem;
+    border-radius: 0.5rem;
+  }
+}

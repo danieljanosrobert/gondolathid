@@ -1,0 +1,12 @@
+node_modules
+dist
+.DS_Store
+*.local
+public/data/hu/
+public/data/ro/
+public/data/stats.json
+public/data/bootstrap.tsv
+public/data/supplement.txt
+public/data/corpus.tsv
+public/data/corpus.tsv.gz
+public/data/hu-words.json

@@ -1,0 +1,82 @@
+:root {
+  --bg: #0f0f14;
+  --surface: #1a1a24;
+  --keyboard-bg: #12121a;
+  --text: #f2f2f7;
+  --muted: #8e8e9a;
+  --border: #2c2c38;
+  --accent: #5b8def;
+  --accent-soft: #2a3a5c;
+  --key-bg: #2a2a36;
+  --key-active: #3d3d4d;
+  --key-shadow: #1a1a22;
+  font-family:
+    "Segoe UI",
+    system-ui,
+    -apple-system,
+    sans-serif;
+  line-height: 1.4;
+  color: var(--text);
+  background: var(--bg);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  overscroll-behavior: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  max-width: 640px;
+  margin: 0 auto;
+  touch-action: manipulation;
+  overflow: hidden;
+}
+
+@media (orientation: landscape) and (max-height: 32rem) {
+  .app {
+    max-width: none;
+  }
+}
+
+.keyboardDock {
+  margin-top: auto;
+  flex-shrink: 0;
+  width: 100%;
+}
+
+.app--center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.hint {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+code {
+  font-size: 0.85em;
+  background: var(--surface);
+  padding: 0.15rem 0.4rem;
+  border-radius: 0.25rem;
+}

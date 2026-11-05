@@ -1,0 +1,248 @@
+.keyboard {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  width: 100%;
+  max-width: 100%;
+  padding: 0.35rem 0.5rem max(0.5rem, env(safe-area-inset-bottom));
+  padding-left: max(0.5rem, env(safe-area-inset-left));
+  padding-right: max(0.5rem, env(safe-area-inset-right));
+  background: var(--keyboard-bg);
+  flex-shrink: 0;
+  overflow-x: hidden;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.35rem;
+  padding: 0 0.15rem 0.25rem;
+  min-width: 0;
+  flex-shrink: 0;
+}
+
+.segmentGroup {
+  display: flex;
+  gap: 0.2rem;
+  padding: 0.12rem;
+  background: var(--border);
+  border-radius: 0.5rem;
+  min-width: 0;
+}
+
+.segmentBtn,
+.segmentBtnActive {
+  border: none;
+  border-radius: 0.35rem;
+  padding: 0.35rem 0.45rem;
+  font-size: clamp(0.62rem, 2.4vmin, 0.72rem);
+  font-weight: 600;
+  cursor: pointer;
+  touch-action: manipulation;
+  background: transparent;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.segmentBtnActive {
+  background: var(--accent);
+  color: #fff;
+}
+
+.keysPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  flex: 0 0 auto;
+  width: 100%;
+  min-width: 0;
+}
+
+.qwertyBlock,
+.predictiveBlock {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.2rem, 0.6vmin, 0.35rem);
+  width: 100%;
+}
+
+.row {
+  display: flex;
+  justify-content: stretch;
+  align-items: stretch;
+  gap: clamp(0.15rem, 0.55vmin, 0.35rem);
+  flex-wrap: nowrap;
+  width: 100%;
+  min-width: 0;
+}
+
+.rowLast {
+  display: flex;
+  justify-content: stretch;
+  align-items: stretch;
+  gap: clamp(0.15rem, 0.55vmin, 0.35rem);
+  flex-wrap: nowrap;
+  width: 100%;
+  min-width: 0;
+  padding-left: clamp(0.35rem, 2.5vw, 1.25rem);
+}
+
+.rowLast .key {
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: none;
+}
+
+.keysPanel .key {
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: none;
+  min-height: clamp(1.85rem, 9vmin, 3rem);
+  font-size: clamp(0.72rem, 2.65vmin, 1.25rem);
+}
+
+.key {
+  min-height: clamp(1.85rem, 9vmin, 3rem);
+  font-size: clamp(0.72rem, 2.65vmin, 1.25rem);
+  font-weight: 600;
+  border: none;
+  border-radius: 0.5rem;
+  background: var(--key-bg);
+  color: var(--text);
+  box-shadow: 0 1px 0 var(--key-shadow);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.key:active {
+  background: var(--key-active);
+}
+
+.keyDisabled {
+  opacity: 0.28;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.keyDisabled:active {
+  background: var(--key-bg);
+  transform: none;
+}
+
+.keyBackspace {
+  flex: 0 1 2.65rem;
+  min-width: 2.35rem;
+  max-width: 3.25rem;
+  min-height: clamp(1.85rem, 9vmin, 3rem);
+  padding: 0 0.35rem;
+  font-size: clamp(1rem, 3.2vmin, 1.35rem);
+  font-weight: 600;
+  border: none;
+  border-radius: 0.5rem;
+  background: var(--key-bg);
+  color: var(--text);
+  box-shadow: 0 1px 0 var(--key-shadow);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.keyBackspace:active {
+  background: var(--key-active);
+}
+
+.bottomRow {
+  display: flex;
+  gap: 0.35rem;
+  align-items: stretch;
+  flex-shrink: 0;
+}
+
+.bottomRow .keyBackspace {
+  flex: 0 1 3.25rem;
+}
+
+.actionSpace,
+.actionEnter {
+  min-height: clamp(1.85rem, 9vmin, 3rem);
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  background: var(--key-bg);
+  color: var(--text);
+  box-shadow: 0 1px 0 var(--key-shadow);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.actionSpace {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.95rem;
+}
+
+.actionEnter {
+  flex: 0 0 4.25rem;
+  font-size: 1.25rem;
+}
+
+.actionSpace:active,
+.actionEnter:active {
+  background: var(--key-active);
+}
+
+@media (orientation: landscape) and (max-height: 32rem) {
+  .keyboard {
+    gap: 0.2rem;
+    padding-top: 0.2rem;
+    padding-bottom: max(0.25rem, env(safe-area-inset-bottom));
+  }
+
+  .toolbar {
+    padding-bottom: 0.1rem;
+    gap: 0.25rem;
+  }
+
+  .segmentBtn,
+  .segmentBtnActive {
+    padding: 0.22rem 0.35rem;
+    font-size: 0.6rem;
+  }
+
+  .keysPanel {
+    gap: 0.2rem;
+  }
+
+  .keysPanel .key,
+  .key,
+  .keyBackspace,
+  .actionSpace,
+  .actionEnter {
+    min-height: 1.75rem;
+    border-radius: 0.35rem;
+  }
+
+  .keysPanel .key,
+  .key {
+    font-size: 0.8rem;
+  }
+
+  .keyBackspace {
+    min-width: 2rem;
+    max-width: 2.75rem;
+    font-size: 1rem;
+  }
+
+  .actionEnter {
+    flex: 0 0 3.25rem;
+    font-size: 1rem;
+  }
+
+  .actionSpace {
+    font-size: 0.8rem;
+  }
+
+  .rowLast {
+    padding-left: clamp(0.25rem, 1.5vmin, 0.75rem);
+  }
+}
